@@ -1,0 +1,2 @@
+/home/stupid/mission_sih/mission_sih/data/nasa_data.csv filter=lfs diff=lfs merge=lfs -text
+*.csv filter=lfs diff=lfs merge=lfs -text
