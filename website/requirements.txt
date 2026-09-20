@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+psycopg2-binary
+sqlalchemy
+geoalchemy2
+requests
+numpy
+pandas
+scikit-learn
+joblib
+huggingface-hub
+apscheduler
+pydantic
+pydantic-settings
+python-multipart
+shapely

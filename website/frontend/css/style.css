@@ -1,0 +1,434 @@
+/* Mission SIH - Industrial Fire Detection System Styles */
+
+:root {
+    --color-bg: #ffffff;
+    --color-bg-secondary: #f5f5f5;
+    --color-text: #1a1a1a;
+    --color-text-secondary: #666666;
+    --color-border: #dddddd;
+    --color-primary: #2563eb;
+    --color-primary-hover: #1d4ed8;
+    --color-success: #16a34a;
+    --color-warning: #ea580c;
+    --color-error: #dc2626;
+
+    /* Classification colors - colorblind-safe palette */
+    --color-industrial: #d97706;
+    --color-natural: #16a34a;
+    --color-volcano: #dc2626;
+    --color-unclassified: #6b7280;
+
+    /* Industrial subcategories */
+    --color-gas-flare: #f59e0b;
+    --color-industrial-facility: #ea580c;
+    --color-mine: #b45309;
+    --color-oil-gas: #d97706;
+    --color-power-plant: #f97316;
+    --color-quarry: #c2410c;
+
+    /* Natural subcategories */
+    --color-forest: #16a34a;
+    --color-agriculture: #65a30d;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-bg: #1a1a1a;
+        --color-bg-secondary: #2d2d2d;
+        --color-text: #f5f5f5;
+        --color-text-secondary: #a3a3a3;
+        --color-border: #404040;
+    }
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-text);
+    background: var(--color-bg);
+}
+
+/* Container */
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Status Bar */
+.status-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 10px 16px;
+    background: var(--color-bg-secondary);
+    border-bottom: 1px solid var(--color-border);
+    font-size: 13px;
+}
+
+.status-item {
+    display: flex;
+    gap: 6px;
+}
+
+.status-error {
+    color: var(--color-error);
+}
+
+/* Main Layout */
+.main-layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Panels */
+.panel {
+    background: var(--color-bg);
+    border-right: 1px solid var(--color-border);
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.filter-panel {
+    width: 280px;
+    flex-shrink: 0;
+}
+
+.detail-panel {
+    width: 320px;
+    flex-shrink: 0;
+    border-right: none;
+    border-left: 1px solid var(--color-border);
+}
+
+.panel h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.panel h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 16px 0 8px;
+}
+
+/* Map Container */
+.map-container {
+    flex: 1;
+    position: relative;
+    background: var(--color-bg-secondary);
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+}
+
+/* Legend */
+.legend {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 12px;
+    font-size: 12px;
+    max-width: 200px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.legend h4 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.2);
+    flex-shrink: 0;
+}
+
+/* Filter Groups */
+.filter-group {
+    margin-bottom: 16px;
+}
+
+.filter-group label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.filter-group input[type="date"],
+.filter-group input[type="text"],
+.filter-group select {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.filter-group input[type="range"] {
+    width: 70%;
+}
+
+/* Buttons */
+button, .btn-primary, .btn-secondary {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: white;
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-hover);
+}
+
+.btn-secondary {
+    background: var(--color-bg-secondary);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.btn-secondary:hover {
+    background: var(--color-border);
+}
+
+/* Stats Section */
+.stats-section {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-border);
+}
+
+#stats-summary {
+    font-size: 12px;
+    margin-bottom: 12px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+}
+
+.stat-row strong {
+    font-weight: 600;
+}
+
+#stats-chart {
+    margin-top: 12px;
+    max-height: 150px;
+}
+
+/* Action Group */
+.action-group {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-border);
+}
+
+.link-group {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-border);
+}
+
+.link-group a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.link-group a:hover {
+    text-decoration: underline;
+}
+
+/* Detail Panel */
+.hint {
+    color: var(--color-text-secondary);
+    font-style: italic;
+}
+
+.detail-section {
+    margin-bottom: 16px;
+}
+
+.detail-section h4 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 13px;
+}
+
+.detail-row .label {
+    color: var(--color-text-secondary);
+}
+
+.detail-row .value {
+    font-weight: 500;
+    text-align: right;
+}
+
+.probability-bar {
+    margin: 6px 0;
+}
+
+.probability-bar .prob-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
+.probability-bar .prob-fill {
+    height: 6px;
+    background: var(--color-bg-secondary);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.probability-bar .prob-value {
+    height: 100%;
+    background: var(--color-primary);
+    border-radius: 3px;
+    transition: width 0.3s;
+}
+
+/* About Page */
+.about-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.about-content {
+    line-height: 1.7;
+}
+
+.about-content h1 {
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.about-content h2 {
+    font-size: 20px;
+    margin-top: 32px;
+    margin-bottom: 12px;
+}
+
+.about-content p {
+    margin-bottom: 12px;
+}
+
+.about-content ul, .about-content ol {
+    margin-left: 24px;
+    margin-bottom: 12px;
+}
+
+.about-content li {
+    margin-bottom: 8px;
+}
+
+.about-content a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.about-content a:hover {
+    text-decoration: underline;
+}
+
+.about-content strong {
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .detail-panel {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-layout {
+        flex-direction: column;
+    }
+
+    .filter-panel {
+        width: 100%;
+        max-height: 300px;
+        border-right: none;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .map-container {
+        height: 500px;
+    }
+}
+
+/* Loading State */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Accessibility */
+button:focus, input:focus, select:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Marker Clusters */
+.marker-cluster-small, .marker-cluster-medium, .marker-cluster-large {
+    background-color: rgba(37, 99, 235, 0.6);
+}
+
+.marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div {
+    background-color: rgba(37, 99, 235, 0.8);
+}

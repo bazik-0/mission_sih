@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission SIH - Industrial Fire Detection</title>
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+    <link rel="stylesheet" href="vendor/leaflet.markercluster/MarkerCluster.css">
+    <link rel="stylesheet" href="vendor/leaflet.markercluster/MarkerCluster.Default.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-item">
+                <strong>Data Source:</strong> <span id="status-source">Loading...</span>
+            </div>
+            <div class="status-item">
+                <strong>Latest Data:</strong> <span id="status-date">-</span>
+            </div>
+            <div class="status-item">
+                <strong>Last Ingest:</strong> <span id="status-ingest">-</span>
+            </div>
+            <div class="status-item status-error" id="status-error" style="display: none;">
+                <strong>Error:</strong> <span id="status-error-text"></span>
+            </div>
+        </div>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Filter Panel -->
+            <div class="panel filter-panel">
+                <h2>Filters</h2>
+
+                <div class="filter-group">
+                    <label>Date Range</label>
+                    <input type="date" id="filter-date-from">
+                    <input type="date" id="filter-date-to">
+                </div>
+
+                <div class="filter-group">
+                    <label>Group</label>
+                    <select id="filter-group">
+                        <option value="">All</option>
+                        <option value="industrial">Industrial</option>
+                        <option value="natural">Natural</option>
+                        <option value="volcano">Volcano</option>
+                        <option value="unclassified">Unclassified</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Label</label>
+                    <select id="filter-label">
+                        <option value="">All</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Decision Path</label>
+                    <select id="filter-decision">
+                        <option value="">All</option>
+                        <option value="mlp">MLP Classification</option>
+                        <option value="volcano_rule">Volcano Rule</option>
+                        <option value="no_match">No Match</option>
+                        <option value="unexpected_type">Unexpected Type</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Min Probability</label>
+                    <input type="range" id="filter-min-prob" min="0" max="1" step="0.05" value="0">
+                    <span id="filter-min-prob-value">0%</span>
+                </div>
+
+                <button id="btn-apply-filters" class="btn-primary">Apply Filters</button>
+                <button id="btn-reset-filters" class="btn-secondary">Reset</button>
+
+                <div class="stats-section">
+                    <h3>Statistics</h3>
+                    <div id="stats-summary"></div>
+                    <canvas id="stats-chart"></canvas>
+                </div>
+
+                <div class="action-group">
+                    <button id="btn-export-csv" class="btn-secondary">Export CSV</button>
+                    <button id="btn-export-geojson" class="btn-secondary">Export GeoJSON</button>
+                    <button id="btn-ingest" class="btn-secondary">Manual Ingest</button>
+                </div>
+
+                <div class="link-group">
+                    <a href="about.html">About this system</a>
+                </div>
+            </div>
+
+            <!-- Map -->
+            <div class="map-container">
+                <div id="map"></div>
+                <div class="legend" id="legend"></div>
+            </div>
+
+            <!-- Detail Panel -->
+            <div class="panel detail-panel">
+                <h2>Hotspot Detail</h2>
+                <div id="detail-content">
+                    <p class="hint">Click on a hotspot to view details</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="vendor/leaflet/leaflet.js"></script>
+    <script src="vendor/leaflet.markercluster/leaflet.markercluster.js"></script>
+    <script src="vendor/chart/chart.min.js"></script>
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

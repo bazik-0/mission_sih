@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Mission SIH Industrial Fire Detection</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="about-container">
+        <div class="about-content">
+            <h1>Mission SIH - Industrial Fire Detection System</h1>
+
+            <p><a href="/">← Back to Map</a></p>
+
+            <h2>Overview</h2>
+            <p>This system classifies NASA FIRMS thermal detections in India to distinguish industrial fires and persistent thermal sources from natural fires. It combines satellite thermal data with land-cover and industrial infrastructure datasets using machine learning.</p>
+
+            <h2>Data Sources</h2>
+            <ul>
+                <li><strong>NASA FIRMS:</strong> VIIRS thermal anomaly detections from NOAA-20 satellite (standard processing product with ~3 month lag)</li>
+                <li><strong>OpenStreetMap:</strong> 67,047 industrial infrastructure points (power plants, mines, gas flares, industrial facilities, oil/gas sites, quarries)</li>
+                <li><strong>Land Use Data:</strong> 17.6 million land-use points across India (2018-2026)</li>
+            </ul>
+
+            <h2>Classification Model</h2>
+            <p>The system uses a scikit-learn MLPClassifier (neural network) trained on labeled FIRMS detections:</p>
+            <ul>
+                <li><strong>Input features (15):</strong> latitude, longitude, scan, track, track_scan, FRP, radiation, brightness, bright_t31, final_bright, acquisition time, day/night, confidence, FIRMS type, match distance</li>
+                <li><strong>Output classes (8):</strong> Agriculture, Forest, gas_flare, industrial_facility, mine, oil_gas, power_plant, quarry</li>
+                <li><strong>Test accuracy:</strong> 67.86% on a random 20% split (random_state 42)</li>
+                <li><strong>Architecture:</strong> Single hidden layer with 200 units, ReLU activation, Adam optimizer, early stopping</li>
+            </ul>
+
+            <h2>Labeling Method</h2>
+            <p>Training labels were produced by assigning each FIRMS detection to the nearest land-use or OSM infrastructure point within 2000 meters:</p>
+            <ol>
+                <li>First, match to the nearest land-use point of the same year (within 2000m)</li>
+                <li>Then, replace with the nearest OSM point if one exists within 2000m and is closer than the land-use match</li>
+                <li>Detections with no match within 2000m were dropped from training</li>
+            </ol>
+            <p><strong>Important:</strong> The model uses latitude, longitude, and match_dist_m as input features, so it learns spatial patterns. This means predictions are influenced by proximity to known infrastructure.</p>
+
+            <h2>Decision Logic</h2>
+            <p>For each thermal detection, the system follows this decision order:</p>
+            <ol>
+                <li><strong>Volcano rule:</strong> If FIRMS type = 1 (active volcano), label as Volcano directly (model not called)</li>
+                <li><strong>No match:</strong> If no land-use or OSM point within 2000m, label as Unclassified (model not called)</li>
+                <li><strong>MLP classification:</strong> For FIRMS types 0, 2, 3 with a match, run the model and use its prediction</li>
+                <li><strong>Unexpected type:</strong> For any other type value, label as Unclassified</li>
+            </ol>
+
+            <h2>Classification Groups</h2>
+            <ul>
+                <li><strong>Industrial:</strong> gas_flare, industrial_facility, mine, oil_gas, power_plant, quarry</li>
+                <li><strong>Natural:</strong> Forest, Agriculture</li>
+                <li><strong>Volcano:</strong> Active volcanic thermal sources (FIRMS type 1)</li>
+                <li><strong>Unclassified:</strong> No nearby infrastructure or unexpected type</li>
+            </ul>
+
+            <h2>FIRMS Types</h2>
+            <p>The FIRMS 'type' field indicates presumed sources:</p>
+            <ul>
+                <li><strong>0:</strong> Presumed vegetation fire</li>
+                <li><strong>1:</strong> Active volcano</li>
+                <li><strong>2:</strong> Other static land source</li>
+                <li><strong>3:</strong> Offshore detection</li>
+            </ul>
+
+            <h2>Limitations and Uncertainties</h2>
+            <ul>
+                <li><strong>Spatial resolution:</strong> VIIRS pixels are 375m at nadir, so attribution to a specific facility is uncertain</li>
+                <li><strong>Test accuracy:</strong> 67.86% overall; per-class metrics were not computed during training</li>
+                <li><strong>Class imbalance:</strong> The gas_flare class relies on very few OSM points, so predictions for this class may be less reliable</li>
+                <li><strong>Labeling assumptions:</strong> Training labels assume the nearest point (within 2000m) is the correct source, which may not always be true</li>
+                <li><strong>Data lag:</strong> Standard processing FIRMS data has a ~3 month lag; current data through 2026-06-30</li>
+                <li><strong>No validation on ground truth:</strong> Model performance is measured on the same labeling method used for training</li>
+            </ul>
+
+            <h2>Technical Details</h2>
+            <p><strong>Training period:</strong> 2018-04-01 to 2026-05-31 (5,089,539 detections filtered to 4,101,465 with matches)</p>
+            <p><strong>Model repository:</strong> <a href="https://huggingface.co/bazik-0/mission-sih" target="_blank">bazik-0/mission-sih</a> on Hugging Face</p>
+            <p><strong>Feature engineering:</strong></p>
+            <ul>
+                <li>track_scan = scan × track</li>
+                <li>final_bright = brightness × bright_t31</li>
+                <li>radiation = track_scan × FRP</li>
+                <li>confidence encoding: l=300, n=600, h=900</li>
+                <li>day/night encoding: D=0, N=1</li>
+            </ul>
+
+            <h2>Problem Statement</h2>
+            <p>This system addresses Smart India Hackathon 2026 problem statement <strong>SIH26162</strong> (NTRO, Disaster Management, Software): AI-based detection and classification of industrial fires and persistent thermal sources using NASA FIRMS, OSM and satellite data.</p>
+
+            <h2>Time Display</h2>
+            <p>All times are shown in UTC with IST (UTC+5:30) alongside for reference.</p>
+
+            <p><a href="/">← Back to Map</a></p>
+        </div>
+    </div>
+</body>
+</html>

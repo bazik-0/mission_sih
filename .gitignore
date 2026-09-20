@@ -1,1 +1,11 @@
 .env
+website/backend/.cache/
+website/backend/__pycache__/
+website/backend/app/__pycache__/
+website/backend/scripts/__pycache__/
+*.pyc
+*.pyo
+__pycache__/
+.pytest_cache/
+*.log
+.DS_Store
