@@ -40,7 +40,18 @@ class IngestionService:
             Ingestion summary
         """
         # FIRMS has ~1 day processing delay — cap to yesterday to avoid 400 errors
+        # For SP data, also cap to the max available date
         yesterday = date.today() - timedelta(days=1)
+
+        # Parse FIRMS_MAX_DATE if configured (for SP data lag)
+        if settings.FIRMS_MAX_DATE:
+            try:
+                from datetime import datetime as dt
+                max_date = dt.strptime(settings.FIRMS_MAX_DATE, "%Y-%m-%d").date()
+                yesterday = min(yesterday, max_date)
+            except (ValueError, AttributeError):
+                pass  # Use yesterday if parsing fails
+
         if end_date is None:
             end_date = yesterday
         else:

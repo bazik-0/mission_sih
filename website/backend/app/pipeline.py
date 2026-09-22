@@ -25,49 +25,84 @@ INDUSTRIAL_CLASSES = {'gas_flare', 'industrial_facility', 'mine', 'oil_gas', 'po
 NATURAL_CLASSES = {'Forest', 'Agriculture'}
 
 class FeaturePipeline:
-    """Feature engineering and classification pipeline."""
+    """Feature engineering and classification pipeline with type-specific models."""
 
     def __init__(self):
-        self.model = None
-        self.model_classes = None
+        self.models = {}  # Dictionary to hold models by type: {0: model, 2: model, 3: model}
+        self.model_classes = None  # All models share the same classes
         self.landuse_indexes = {}  # Cached by year
         self.osm_index = None
         self.model_source = None
 
     def load_model(self):
-        """Load the model from Hugging Face or local fallback."""
-        if self.model is not None:
+        """Load type-specific models from Hugging Face or local fallback."""
+        if len(self.models) > 0:
             return
 
         import joblib
+
+        # Load models for each type: 0, 2, 3
+        model_types = [0, 2, 3]
 
         # Try Hugging Face first
         if settings.HUGGING_FACE_API:
             try:
                 from huggingface_hub import hf_hub_download
-                model_path = hf_hub_download(
-                    repo_id="bazik-0/mission-sih",
-                    filename="model.joblib",
-                    token=settings.HUGGING_FACE_API,
-                    cache_dir=settings.CACHE_DIR / "hf_cache"
-                )
-                self.model = joblib.load(model_path)
-                self.model_classes = self.model.classes_
-                self.model_source = "huggingface"
-                print(f"Model loaded from Hugging Face: {self.model_classes}")
-                return
-            except Exception as e:
-                print(f"Failed to load from Hugging Face: {e}")
 
-        # Fallback to local
-        local_model = settings.MODEL_DIR / "model.joblib"
-        if local_model.exists():
-            self.model = joblib.load(local_model)
-            self.model_classes = self.model.classes_
+                # Create Hugging Face repo connection string
+                for model_type in model_types:
+                    try:
+                        # For Type 0, 2, 3 models
+                        repo_id = f"bazik-0/mission-sih-type-{model_type}"
+                        model_filename = f"type_{model_type}_model.joblib"
+                        model_path = hf_hub_download(
+                            repo_id=repo_id,
+                            filename=model_filename,
+                            token=settings.HUGGING_FACE_API,
+                            cache_dir=settings.CACHE_DIR / f"hf_cache_type_{model_type}"
+                        )
+                        self.models[model_type] = joblib.load(model_path)
+                        print(f"Model for type {model_type} loaded from Hugging Face: {repo_id}/{model_filename}")
+                    except Exception as e:
+                        print(f"Failed to load model for type {model_type} from Hugging Face: {e}")
+                        # Continue to try other types
+
+                # If we loaded at least one model, set the classes from the first one
+                if len(self.models) > 0:
+                    # Get classes from the first loaded model
+                    first_model_key = list(self.models.keys())[0]
+                    self.model_classes = self.models[first_model_key].classes_
+                    self.model_source = "huggingface"
+                    print(f"Loaded {len(self.models)} type-specific models from Hugging Face")
+                    return
+
+            except Exception as e:
+                print(f"Hugging Face loading failed: {e}")
+
+        # Fallback to local models
+        for model_type in model_types:
+            try:
+                # Look for type-specific models in local directory
+                local_model = settings.MODEL_DIR / f"type_{model_type}_model.joblib"
+                if local_model.exists():
+                    self.models[model_type] = joblib.load(local_model)
+                    print(f"Model for type {model_type} loaded from local: {local_model}")
+                else:
+                    print(f"Local model not found for type {model_type}: {local_model}")
+            except Exception as e:
+                print(f"Failed to load local model for type {model_type}: {e}")
+
+        # If we loaded at least one model, set the classes
+        if len(self.models) > 0:
+            # Get classes from the first loaded model
+            first_model_key = list(self.models.keys())[0]
+            self.model_classes = self.models[first_model_key].classes_
             self.model_source = "local"
-            print(f"Model loaded from local: {self.model_classes}")
-        else:
-            raise RuntimeError(f"Model not found at {local_model}")
+            print(f"Loaded {len(self.models)} type-specific models from local")
+            return
+
+        # If no models loaded at all
+        raise RuntimeError(f"No type-specific models found for types {model_types}")
 
     def load_osm_index(self):
         """Load OSM index."""
@@ -242,7 +277,7 @@ class FeaturePipeline:
                 result['matched_from'] = None
 
             # Decision path 2: No match within 2000m
-            elif pd.isna(categories[i]) or np.isinf(distances[i]):
+            elif pd.isna(categories[i]):
                 result['final_label'] = 'Unclassified'
                 result['final_group'] = 'unclassified'
                 result['decision_path'] = 'no_match'
@@ -250,27 +285,81 @@ class FeaturePipeline:
                 result['probabilities'] = None
                 result['matched_from'] = None
 
-            # Decision path 3: Run MLP (types 0, 2, 3)
+            # Decision path 3: Run type-specific MLP (types 0, 2, 3)
             elif firms_type in [0, 2, 3]:
-                # Prepare features for model
+                # Check if we have a model for this type
+                if firms_type not in self.models:
+                    # Fallback to any available model or skip classification
+                    if len(self.models) > 0:
+                        # Use the first available model as fallback
+                        model_type = list(self.models.keys())[0]
+                        model = self.models[model_type]
+                        print(f"WARNING: No model for type {firms_type}, using fallback model for type {model_type}")
+                    else:
+                        # No models available at all
+                        result['final_label'] = 'Unclassified'
+                        result['final_group'] = 'unclassified'
+                        result['decision_path'] = 'no_model'
+                        result['predicted_class'] = None
+                        result['probabilities'] = None
+                        result['matched_from'] = None
+                        results.append(result)
+                        continue
+                else:
+                    model = self.models[firms_type]
+
+                # Prepare features for model based on type
+                # Note: type 0 uses 'year', while types 2 and 3 do not.
                 feature_dict = {
                     **features[i],
                     'match_dist_m': distances[i]
                 }
-                X = pd.DataFrame([feature_dict])[FEATURE_ORDER]
+
+                # Setup specific features for current model
+                if firms_type == 0:
+                    feature_dict['year'] = landuse_years[i] if landuse_years[i] != -1 else int(str(row.get('acq_date', '2018'))[:4])
+                    features_to_use = [
+                        "latitude", "longitude", "brightness", "scan", "track",
+                        "acq_time", "confidence", "bright_t31", "frp", "daynight",
+                        "type", "year", "match_dist_m"
+                    ]
+                else:
+                    features_to_use = [
+                        "latitude", "longitude", "brightness", "scan", "track",
+                        "acq_time", "confidence", "bright_t31", "frp", "daynight",
+                        "type", "match_dist_m"
+                    ]
+
+                X = pd.DataFrame([feature_dict])[features_to_use]
 
                 # Predict
-                probs = self.model.predict_proba(X)[0]
+                probs = model.predict_proba(X)[0]
                 predicted_idx = np.argmax(probs)
-                predicted_class = self.model_classes[predicted_idx]
+                predicted_class = model.classes_[predicted_idx]
 
-                # Build probabilities dict
-                probs_dict = {cls: float(prob) for cls, prob in zip(self.model_classes, probs)}
+                # Map generic class IDs back to original labels if necessary
+                # based on our knowledge of the model.classes_
+                if firms_type == 0:
+                    class_mapping = {1: 'Forest', 2: 'Agriculture'}
+                elif firms_type == 2:
+                    class_mapping = {1: 'industrial_facility', 2: 'quarry', 3: 'power_plant', 4: 'gas_flare', 5: 'mine'}
+                else:  # type 3
+                    class_mapping = {1: 'industrial_facility', 2: 'quarry', 3: 'gas_flare', 4: 'power_plant'}
+
+                # Ensure predicted_class is a string representation of the mapped class label
+                if isinstance(predicted_class, (int, np.integer)) or (isinstance(predicted_class, str) and predicted_class.isdigit()):
+                    predicted_class = class_mapping.get(int(predicted_class), str(predicted_class))
+
+                # Also update probabilities keys
+                mapped_probs_dict = {}
+                for cls, prob in zip(model.classes_, probs):
+                    mapped_cls = class_mapping.get(int(cls), str(cls)) if isinstance(cls, (int, np.integer)) or (isinstance(cls, str) and cls.isdigit()) else str(cls)
+                    mapped_probs_dict[mapped_cls] = float(prob)
 
                 result['predicted_class'] = predicted_class
-                result['probabilities'] = probs_dict
+                result['probabilities'] = mapped_probs_dict
                 result['final_label'] = predicted_class
-                result['decision_path'] = 'mlp'
+                result['decision_path'] = f'mlp_type_{firms_type}'
 
                 # Determine matched_from
                 if landuse_years[i] != -1:

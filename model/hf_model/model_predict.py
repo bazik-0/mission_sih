@@ -2,7 +2,7 @@
 import joblib
 import pandas as pd
 
-model = joblib.load("model.joblib")
+model = joblib.load("type_3_model.joblib")
 
 FEATURES = [
     "latitude",
