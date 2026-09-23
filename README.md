@@ -31,48 +31,28 @@ The system is designed around two outputs of the SIH problem:
 ## System architecture
 
 ```mermaid
-graph TB
-    subgraph frontend["Frontend — Plain HTML/JS/CSS"]
-        map["Leaflet map\nclustering + base layers"]
-        filters["Filters + statistics\nChart.js"]
-        detail["Hotspot detail panel"]
-    end
+flowchart TD
+    A[NASA FIRMS<br/>Thermal Detections] --> B[Data Processing]
 
-    subgraph backend["Backend — FastAPI"]
-        main["main.py\nHTTP/API endpoints"]
-        firms["firms.py\nFIRMS API client"]
-        ingestion["ingestion.py\ningestion + scheduling"]
-        pipeline["pipeline.py\nfeature engineering + classification"]
-        database["database.py\nSQLAlchemy/PostGIS"]
-    end
+    C[Land Use Data] --> B
+    D[OpenStreetMap<br/>Industrial Features] --> B
 
-    subgraph storage["Local/DB storage"]
-        postgres[("PostgreSQL + PostGIS\nhotspots + OSM + ingest runs")]
-        landuse["Land-use BallTree indexes\nper year"]
-        osm["OSM BallTree index"]
-    end
+    B --> E[Feature Engineering<br/>+ Spatial Matching]
 
-    subgraph external["External services"]
-        firmsapi["NASA FIRMS\nVIIRS NOAA-20 SP Area API"]
-        hf["Hugging Face\n3 type-specific models"]
-    end
+    E --> F{FIRMS Type}
 
-    firmsapi --> firms
-    firms --> ingestion
-    ingestion --> pipeline
-    pipeline --> landuse
-    pipeline --> osm
-    pipeline --> hf
-    pipeline --> database
-    database --> postgres
-    main --> pipeline
-    main --> database
-    postgres --> map
-    postgres --> filters
-    postgres --> detail
-    main -.serves.-> map
-    main -.serves.-> filters
-    main -.serves.-> detail
+    F -->|Type 1| G[Volcano]
+    F -->|Type 0| H[Type 0 Model<br/>Forest / Agriculture]
+    F -->|Type 2| I[Type 2 Model<br/>Industrial Sources]
+    F -->|Type 3| J[Type 3 Model<br/>Industrial Sources]
+
+    G --> K[PostgreSQL + PostGIS]
+    H --> K
+    I --> K
+    J --> K
+
+    K --> L[FastAPI Backend]
+    L --> M[Web Dashboard<br/>Interactive Map]
 ```
 
 ### Main components
