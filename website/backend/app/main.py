@@ -115,10 +115,15 @@ def health_check(db: Session = Depends(get_db)):
     }
 
     # Model status
-    if pipeline.model is not None:
+    if hasattr(pipeline, 'models') and len(pipeline.models) > 0:
         health["model_loaded"] = True
-        health["model_source"] = pipeline.model_source
-        health["model_classes"] = list(pipeline.model_classes)
+        health["model_source"] = getattr(pipeline, 'model_source', 'unknown')
+        if pipeline.model_classes is not None:
+            health["model_classes"] = [str(c) for c in pipeline.model_classes]
+        else:
+            first_key = list(pipeline.models.keys())[0]
+            health["model_classes"] = [str(c) for c in pipeline.models[first_key].classes_]
+        health["model_types_loaded"] = list(pipeline.models.keys())
     else:
         health["model_loaded"] = False
 

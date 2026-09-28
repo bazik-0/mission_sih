@@ -15,8 +15,9 @@ class Settings(BaseSettings):
 
     # NASA FIRMS API
     NASA_FIRMS_MAP_KEY: str
-    FIRMS_SOURCE: str = "MODIS_NRT"
+    FIRMS_SOURCE: str = "VIIRS_NOAA20_SP"
     FIRMS_AREA: str = "68,6,97.5,37.5"  # India bbox: west,south,east,north
+    FIRMS_MAX_DATE: str = "2026-06-30"  # SP data only available through this date
 
     # Hugging Face
     HUGGING_FACE_API: str = ""
