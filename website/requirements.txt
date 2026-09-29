@@ -3,6 +3,7 @@ uvicorn[standard]
 psycopg2-binary
 sqlalchemy
 geoalchemy2
+psycopg
 requests
 numpy
 pandas
