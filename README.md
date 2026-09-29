@@ -2,12 +2,24 @@
 
 **Smart India Hackathon 2026 · SIH26162 · NTRO · Disaster Management · Software**
 
-Mission SIH is a geospatial AI system for classifying satellite-detected thermal anomalies across India. It combines NASA FIRMS thermal detections with land-use data and OpenStreetMap infrastructure, applies type-specific XGBoost classifiers, stores the results in PostgreSQL/PostGIS, and presents them on an interactive map.
+Agnius is a geospatial AI system for classifying satellite-detected thermal anomalies across India. It combines NASA FIRMS thermal detections with land-use data and OpenStreetMap infrastructure, applies type-specific XGBoost classifiers, stores the results in PostgreSQL/PostGIS, and presents them on an interactive map.
 
 The system is designed around two outputs of the SIH problem:
 
 1. Separate industrial/persistent thermal sources from natural fires.
 2. Store and visualize the classified detections as a GIS layer over India.
+
+## ⚠️ Important Notice for SIH Judges
+
+> The **frontend of our website is currently deployed and accessible online**, but the backend requires a database/storage limit than what is available on the free hosting platforms we could use.
+>
+> To experience the **complete working system, including the backend and database functionality**, we request you to **clone this repository and run it locally**.
+>
+> **Frontend Demo:** The deployed link demonstrates the website interface and frontend functionality.  
+> **Full Demo:** Please run the project locally using the setup instructions provided below.
+>
+> We apologize for the inconvenience and appreciate your time in evaluating our project.
+
 
 > **Important:** the website currently uses the configured NASA FIRMS **VIIRS NOAA-20 Standard Processing (`VIIRS_NOAA20_SP`)** source. This is not a true real-time/NRT feed. Standard Processing is used because the project depends on FIRMS' `type` field, including the `type = 1` volcano rule.
 
@@ -393,8 +405,7 @@ mission_sih/
 │   │   │   └── config.py
 │   │   ├── scripts/
 │   │   │   ├── probe_firms.py
-│   │   │   ├── build_lookup.py
-│   │   │   └── parity_check.py
+│   │   │   └── build_lookup.py
 │   │   └── db/init.sql
 │   ├── frontend/
 │   │   ├── index.html
@@ -404,9 +415,7 @@ mission_sih/
 │   │   └── vendor/
 │   ├── docker-compose.yml
 │   ├── requirements.txt
-│   ├── test_components.sh
-│   ├── test_ingest.py
-│   └── test_numpy_cast.py
+│   └── test_ingest.py
 │
 ├── .env.example
 ├── .gitignore
@@ -502,16 +511,6 @@ website/backend/.cache/
 ```
 
 These cache files are local runtime artifacts and should not be committed.
-
-### 7. Run the parity check
-
-```bash
-python website/backend/scripts/parity_check.py
-```
-
-The script compares selected engineered values such as `track_scan`, `final_bright`, `radiation`, confidence encoding and day/night encoding against matching rows from the historical training dataset.
-
-It is a feature-engineering check, not a proof that every runtime spatial label exactly reproduces the historical training notebook.
 
 ### 8. Start the application
 
